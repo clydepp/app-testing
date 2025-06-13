@@ -27,9 +27,6 @@ pixgen.register_map.gp4 = imag_center
 pixgen.register_map.gp5 = wait_stages
 frame = imgen_vdma.readframe()
 
-
-
-
 # Step 1: Convert (n, n, n) RGB image → grayscale (just one channel)
 def rgb_to_grayscale(rgb_image):
     return rgb_image[..., 0]  # All channels are equal
