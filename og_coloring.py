@@ -2,7 +2,7 @@
 import PIL.Image
 import time
 import numpy as np
-from pynq import allocate
+# from pynq import allocate
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm

@@ -11,8 +11,8 @@ import { useTranslation } from './i18n/useTranslation.js';
 function App() {
   // Pixel to complex coordinate conversion
   const pixel_to_complex = (x, y, zoom, real_center, imag_center) => {
-    const SCREEN_WIDTH = 640;
-    const SCREEN_HEIGHT = 480;
+    const SCREEN_WIDTH = 960;
+    const SCREEN_HEIGHT = 720;
 
     // Calculate the size of the viewing area in the complex plane
     const real_width = 3 / (2 ** zoom);
@@ -154,14 +154,24 @@ function App() {
 
   // WebSocket setup
   onMount(() => {
-    const ws = new WebSocket('ws://192.168.137.146:8000');
+    const ws = new WebSocket('ws://localhost:8001');
     
     ws.onopen = () => {
-      console.log('Connected to PYNQ WebSocket server!');
-      setWebsocket(ws);
+        console.log('Connected to Python processing server!');
+        setWebsocket(ws);
     };
 
-    ws.onmessage = (event) => setMandelbrotImage(event.data);
+    ws.onmessage = (event) => {
+        // Handle binary data
+        if (event.data instanceof Blob) {
+            const url = URL.createObjectURL(event.data);
+            setMandelbrotImage(url);
+            
+            // Clean up old URLs to prevent memory leaks
+            setTimeout(() => URL.revokeObjectURL(url), 5000);
+        }
+    };
+    
     ws.onerror = (error) => console.error('WebSocket error:', error);
     ws.onclose = () => console.log('WebSocket connection closed');
 
@@ -207,8 +217,8 @@ function App() {
         html, body, #root {
           margin: 0;
           padding: 0;
-          width: 640px;
-          height: 480px;
+          width: 960px;
+          height: 720px;
           overflow: hidden;
         }
         
@@ -227,7 +237,7 @@ function App() {
         }
       `}</style>
 
-      <div class={`w-[640px] h-[480px] border overflow-hidden shadow-lg relative ${isDarkMode() ? 'bg-gray-900' : 'bg-white'}`}>
+      <div class={`w-[960px] h-[720px] border overflow-hidden shadow-lg relative ${isDarkMode() ? 'bg-gray-900' : 'bg-white'}`}>
         <div style={{
           "background-image": `url('${mandelbrotImage() || "data:image/jpeg;base64,iVBORw0K..."}')`,
           "background-size": "cover",
