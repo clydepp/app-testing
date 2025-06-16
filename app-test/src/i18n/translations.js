@@ -9,35 +9,21 @@ export const translations = {
     coordinates: "Coordinates",
     zoom: "Zoom",
     manualConfig: "Manual Config",
-    theoryContent: `The Mandelbrot set is the set of complex numbers c for which the sequence defined by:
-
-    z₀ = 0
-    zₙ₊₁ = zₙ² + c
-
-remains bounded (does not escape to infinity) as n increases.
-
-To determine whether a point c is in the Mandelbrot set:
-1. Start with z = 0.
-2. Repeatedly apply the function z = z² + c.
-3. If |z| ever becomes greater than 2, the point c is NOT in the set.
-4. If |z| stays less than or equal to 2 after many iterations, c is LIKELY in the set.
-
-In practice:
-- Each pixel on the screen represents a complex number c.
-- We iterate z = z² + c for each pixel.
-- Points that escape are colored based on how quickly they escape.
-- Points that don't escape (stay bounded) are colored black.
-
-This creates the famous fractal: infinitely detailed, self-similar, and complex.
-
-Terms:
-- c: complex number (real + imaginary part)
-- |z|: magnitude of the complex number z
-- Escape radius: usually set to 2
-- Iteration count: how many times to repeat z = z² + c (e.g., 100–1000 times)
-
-The boundary of the Mandelbrot set marks the edge between stability and chaos.`,
-    optimisationsContent: "To speedup the Mandelbrot calculation: use GPU acceleration, parallel processing, and optimized algorithms...",
+    textToSpeech: "Text-to-Speech",
+    enableTTS: "Enable Text-to-Speech",
+    speechRate: "Speech Rate",
+    testSpeech: "Test Speech",
+    speaking: "Speaking...",
+    stop: "Stop",
+    readAloud: "Read Aloud",
+    reading: "Reading...",
+    ttsTestMessage: "Text to speech is working correctly. This is a test message.",
+    ttsEnabled: "Text-to-speech is enabled. Use the Read Aloud buttons in Theory and Optimizations sections.",
+    slow: "Slow",
+    normal: "Normal",
+    fast: "Fast",
+    theoryContent: "The Mandelbrot set is the set of complex numbers c for which the sequence defined by z₀ = 0, zₙ₊₁ = zₙ² + c remains bounded as n increases.",
+    optimisationsContent: "Zoom and maximum iterations were powers of two, allowing efficient shift operations instead of costly multiplications or divisions. The FPGA produces a greyscale frame where each pixel's shade depends on how deep its associated complex number evolves.",
     accessibilityContent: "Includes multiple language support, colorblind-friendly palettes, and keyboard navigation.",
     languageSettings: "Language Settings"
   },
@@ -51,19 +37,21 @@ The boundary of the Mandelbrot set marks the edge between stability and chaos.`,
     coordinates: "Coordenadas",
     zoom: "Zoom",
     manualConfig: "Configuración Manual",
-    theoryContent: `El conjunto de Mandelbrot es el conjunto de números complejos c para los cuales la secuencia definida por:
-
-    z₀ = 0
-    zₙ₊₁ = zₙ² + c
-
-permanece acotada (no escapa al infinito) a medida que n aumenta.
-
-Para determinar si un punto c está en el conjunto de Mandelbrot:
-1. Comience con z = 0.
-2. Aplique repetidamente la función z = z² + c.
-3. Si |z| se vuelve mayor que 2, el punto c NO está en el conjunto.
-4. Si |z| permanece menor o igual a 2 después de muchas iteraciones, c probablemente ESTÁ en el conjunto.`,
-    optimisationsContent: "Para acelerar el cálculo de Mandelbrot: use aceleración GPU, procesamiento paralelo y algoritmos optimizados...",
+    textToSpeech: "Texto a Voz",
+    enableTTS: "Habilitar Texto a Voz",
+    speechRate: "Velocidad de Voz",
+    testSpeech: "Probar Voz",
+    speaking: "Hablando...",
+    stop: "Parar",
+    readAloud: "Leer en Voz Alta",
+    reading: "Leyendo...",
+    ttsTestMessage: "El texto a voz está funcionando correctamente. Este es un mensaje de prueba.",
+    ttsEnabled: "El texto a voz está habilitado. Use los botones Leer en Voz Alta en las secciones de Teoría y Optimizaciones.",
+    slow: "Lento",
+    normal: "Normal",
+    fast: "Rápido",
+    theoryContent: "El conjunto de Mandelbrot es el conjunto de números complejos c para los cuales la secuencia definida por z₀ = 0, zₙ₊₁ = zₙ² + c permanece acotada a medida que n aumenta.",
+    optimisationsContent: "El zoom y las iteraciones máximas fueron potencias de dos, permitiendo operaciones de desplazamiento eficientes en lugar de costosas multiplicaciones o divisiones.",
     accessibilityContent: "Incluye soporte para múltiples idiomas, paletas amigables para daltónicos y navegación por teclado.",
     languageSettings: "Configuración de Idioma"
   },
@@ -77,19 +65,21 @@ Para determinar si un punto c está en el conjunto de Mandelbrot:
     coordinates: "坐标",
     zoom: "缩放",
     manualConfig: "手动配置",
-    theoryContent: `曼德博集合是复数c的集合，其序列定义为：
-
-    z₀ = 0
-    zₙ₊₁ = zₙ² + c
-
-当n增加时保持有界（不会逃逸到无穷大）。
-
-要确定点c是否在曼德博集合中：
-1. 从z = 0开始。
-2. 重复应用函数z = z² + c。
-3. 如果|z|变得大于2，则点c不在集合中。
-4. 如果|z|在多次迭代后保持小于或等于2，则c可能在集合中。`,
-    optimisationsContent: "加速曼德博计算：使用GPU加速、并行处理和优化算法...",
+    textToSpeech: "文本转语音",
+    enableTTS: "启用文本转语音",
+    speechRate: "语音速度",
+    testSpeech: "测试语音",
+    speaking: "正在朗读...",
+    stop: "停止",
+    readAloud: "朗读",
+    reading: "正在阅读...",
+    ttsTestMessage: "文本转语音功能正常工作。这是一条测试消息。",
+    ttsEnabled: "文本转语音已启用。请在理论和优化部分使用朗读按钮。",
+    slow: "慢",
+    normal: "正常",
+    fast: "快",
+    theoryContent: "曼德博集合是复数c的集合，其序列定义为z₀ = 0, zₙ₊₁ = zₙ² + c，当n增加时保持有界。",
+    optimisationsContent: "缩放和最大迭代次数采用2的幂，允许高效的移位操作，而不是昂贵的乘法或除法运算。",
     accessibilityContent: "包括多语言支持、色盲友好调色板和键盘导航。",
     languageSettings: "语言设置"
   },
@@ -103,19 +93,21 @@ Para determinar si un punto c está en el conjunto de Mandelbrot:
     coordinates: "الإحداثيات", 
     zoom: "التكبير",
     manualConfig: "التكوين اليدوي",
-    theoryContent: `مجموعة مانديلبروت هي مجموعة الأرقام المعقدة c التي يتم تعريف تسلسلها بواسطة:
-
-    z₀ = 0
-    zₙ₊₁ = zₙ² + c
-
-تبقى محدودة (لا تهرب إلى اللانهاية) مع زيادة n.
-
-لتحديد ما إذا كانت النقطة c في مجموعة مانديلبروت:
-1. ابدأ بـ z = 0.
-2. طبق الدالة z = z² + c بشكل متكرر.
-3. إذا أصبح |z| أكبر من 2، فإن النقطة c ليست في المجموعة.
-4. إذا بقي |z| أقل من أو يساوي 2 بعد تكرارات كثيرة، فمن المحتمل أن c في المجموعة.`,
-    optimisationsContent: "لتسريع حساب مانديلبروت: استخدم تسريع وحدة معالجة الرسومات، والمعالجة المتوازية، والخوارزميات المحسنة...",
+    textToSpeech: "النص إلى كلام",
+    enableTTS: "تفعيل النص إلى كلام",
+    speechRate: "سرعة الكلام",
+    testSpeech: "اختبار الكلام",
+    speaking: "يتحدث...",
+    stop: "توقف",
+    readAloud: "اقرأ بصوت عالٍ",
+    reading: "يقرأ...",
+    ttsTestMessage: "تعمل ميزة النص إلى كلام بشكل صحيح. هذه رسالة اختبار.",
+    ttsEnabled: "تم تفعيل النص إلى كلام. استخدم أزرار اقرأ بصوت عالٍ في أقسام النظرية والتحسينات.",
+    slow: "بطيء",
+    normal: "عادي",
+    fast: "سريع",
+    theoryContent: "مجموعة مانديلبروت هي مجموعة الأرقام المعقدة c التي يتم تعريف تسلسلها بواسطة z₀ = 0, zₙ₊₁ = zₙ² + c تبقى محدودة مع زيادة n.",
+    optimisationsContent: "كانت التكبير والتكرارات القصوى قوى للعدد اثنين، مما يسمح بعمليات التحويل الفعالة بدلاً من الضرب أو القسمة المكلفة.",
     accessibilityContent: "يتضمن دعم اللغات المتعددة، ولوحات الألوان الصديقة لعمى الألوان، والتنقل بلوحة المفاتيح.",
     languageSettings: "إعدادات اللغة"
   }

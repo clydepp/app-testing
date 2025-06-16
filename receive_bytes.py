@@ -16,11 +16,10 @@ def rgb_to_grayscale(rgb_image):
 
 # Step 2: Apply matplotlib colormap to grayscale image
 def apply_colormap(gray_image, cmap_name='inferno'):
-    # Fix matplotlib deprecation warning
     try:
-        cmap = cm.colormaps[cmap_name]  # ← New way (matplotlib 3.7+)
+        cmap = cm.colormaps[cmap_name] 
     except AttributeError:
-        cmap = cm.get_cmap(cmap_name)   # ← Fallback for older versions
+        cmap = cm.get_cmap(cmap_name)
     
     normed = gray_image / 255.0
     colored = cmap(normed)[..., :3]  # Drop alpha channel
@@ -32,7 +31,7 @@ def colormapped_image(frame, cmap_name='inferno', return_type='array'):
     colored = apply_colormap(gray, cmap_name)
     if return_type == 'pil':
         return Image.fromarray(colored)
-    return colored  # returns a NumPy array (H, W, 3)
+    return colored
 
 async def process(websocket):
     async for message in websocket:
@@ -76,7 +75,6 @@ async def send_to_ui(frame):
 async def main(): 
     print("fpga and laptop servers initialised")
     
-    # ADD max_size parameter to handle large frames
     async with websockets.serve(
         process, 
         "192.168.137.1", 

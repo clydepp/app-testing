@@ -36,8 +36,6 @@ function App() {
   const { t, setLanguage, currentLanguage } = useTranslation();
   
   const pos = createMousePosition(window);
-  
-  // Core state
   const [mouseWheelDelta, setMouseWheelDelta] = createSignal(1);
   const [isDarkMode, setIsDarkMode] = createSignal(false);
   const [colourScheme, setColourScheme] = createSignal("classic");
@@ -47,7 +45,7 @@ function App() {
   // UI state
   const [isCollapsed, setIsCollapsed] = createSignal(false);
   const [showNumbers, setShowNumbers] = createSignal(false);
-  const [counter, setCounter] = createSignal(200);
+  const [counter, setCounter] = createSignal(1);
   
   // Modal states - combined into object for cleaner management
   const [modals, setModals] = createSignal({
@@ -65,7 +63,13 @@ function App() {
   
   // WebSocket
   const [mandelbrotImage, setMandelbrotImage] = createSignal('');
-  const [websocket, setWebsocket] = createSignal(null);
+  const [websocket, setWebsocket] = createSignal(null);          // For FPGA parameters
+  const [laptopWebsocket, setLaptopWebsocket] = createSignal(null); // For processed frames
+
+  // Add TTS state
+  const [isTTSEnabled, setIsTTSEnabled] = createSignal(false);
+  const [speechRate, setSpeechRate] = createSignal(1.0);
+  const [isReading, setIsReading] = createSignal(false);
 
   // Memoized complex coordinate calculation for performance
   const currentComplexCoordinates = createMemo(() => {
@@ -94,7 +98,7 @@ function App() {
   // Mouse wheel handler - capped at 32 with ** operator
   onMount(() => {
     const handleWheel = (event) => {
-      const newValue = Math.floor(mouseWheelDelta() + (-event.deltaY) * 0.01);
+      const newValue = Math.floor(mouseWheelDelta()+ (-event.deltaY)*0.01 );
       setMouseWheelDelta(Math.max(0, Math.min(newValue, 32)));
     };
 
@@ -102,19 +106,26 @@ function App() {
     onCleanup(() => window.removeEventListener('wheel', handleWheel));
   });
 
+  // Create a capped setter function:
+  const setCounterCapped = (value) => {
+    setCounter(Math.max(0, Math.min(value, 10)));
+  };
+
   // Event handlers - simplified
   const toggleCollapse = () => {
     if (showNumbers()) {
-      setCounter(counter() - 10);
+      setCounterCapped(counter() - 3);
     } else {
       setIsCollapsed(!isCollapsed());
     }
   };
 
-  const handlePlusClick = () => setShowNumbers(!showNumbers());
-  const handlePlusOne = () => setCounter(counter() + 1);
-  const handleMinusOne = () => setCounter(counter() - 1);
-  const handlePlusTen = () => setCounter(counter() + 10);
+  const handlePlusClick = () => {
+    setShowNumbers(!showNumbers());
+  };
+  const handlePlusOne = () => setCounterCapped(counter() + 1);
+  const handleMinusOne = () => setCounterCapped(counter() - 1);
+  const handlePlusTen = () => setCounterCapped(counter() + 3);
   const changeColourScheme = (scheme) => setColourScheme(scheme);
 
   // Input handlers - consolidated
@@ -154,15 +165,27 @@ function App() {
 
   // WebSocket setup
   onMount(() => {
-    const ws = new WebSocket('ws://localhost:8001');
+    // Connection 1: Send parameters to FPGA
+    const fpgaWs = new WebSocket('ws://192.168.137.248:8080');
     
-    ws.onopen = () => {
-        console.log('Connected to Python processing server!');
-        setWebsocket(ws);
+    fpgaWs.onopen = () => {
+        console.log('🔧 Connected to FPGA parameter server!');
+        setWebsocket(fpgaWs);  // This is used for sending parameters
+    };
+    
+    fpgaWs.onerror = (error) => console.error('FPGA WebSocket error:', error);
+    fpgaWs.onclose = () => console.log('FPGA parameter connection closed');
+
+    // Connection 2: Receive processed frames from laptop
+    const laptopWs = new WebSocket('ws://localhost:8001');
+    
+    laptopWs.onopen = () => {
+        console.log('💻 Connected to laptop frame server!');
+        setLaptopWebsocket(laptopWs);
     };
 
-    ws.onmessage = (event) => {
-        // Handle binary data
+    laptopWs.onmessage = (event) => {
+        // Handle processed frames from laptop
         if (event.data instanceof Blob) {
             const url = URL.createObjectURL(event.data);
             setMandelbrotImage(url);
@@ -172,25 +195,54 @@ function App() {
         }
     };
     
-    ws.onerror = (error) => console.error('WebSocket error:', error);
-    ws.onclose = () => console.log('WebSocket connection closed');
+    laptopWs.onerror = (error) => console.error('Laptop WebSocket error:', error);
+    laptopWs.onclose = () => console.log('Laptop frame connection closed');
 
-    onCleanup(() => ws?.close());
+    onCleanup(() => {
+        fpgaWs?.close();
+        laptopWs?.close();
+    });
   });
   
   // Send parameters when they change
   createEffect(() => {
-    const ws = websocket();
+    const ws = websocket(); // This now connects to FPGA
     if (ws?.readyState === WebSocket.OPEN) {
       ws.send(JSON.stringify({
         re_c: centerX(),
         im_c: centerY(),
         zoom: mouseWheelDelta(),
         max_iter: counter(),
-        colour_sch: colourScheme()
+        // colour_sch: colourScheme() (will be handled in .py program)
       }));
     }
   });
+
+  // TTS functionality
+  const speak = (text) => {
+    if (!isTTSEnabled() || !text) return;
+    
+    // Cancel any ongoing speech
+    window.speechSynthesis.cancel();
+    
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = speechRate();
+    utterance.lang = currentLanguage() === 'en' ? 'en-US' : 
+                     currentLanguage() === 'es' ? 'es-ES' :
+                     currentLanguage() === 'zh' ? 'zh-CN' : 
+                     currentLanguage() === 'ar' ? 'ar-SA' : 'en-US';
+    
+    utterance.onstart = () => setIsReading(true);
+    utterance.onend = () => setIsReading(false);
+    utterance.onerror = () => setIsReading(false);
+    
+    window.speechSynthesis.speak(utterance);
+  };
+
+  const stopSpeaking = () => {
+    window.speechSynthesis.cancel();
+    setIsReading(false);
+  };
 
   // Common input props for reusability
   const inputProps = {
@@ -249,7 +301,7 @@ function App() {
           <div class="p-3 ui-controls" style={{ position: "absolute", "z-index": "10" }}>
             <div class="flex flex-col items-start gap-3 w-fit">
               <Button onClick={toggleCollapse} isDarkMode={isDarkMode()}>
-                {showNumbers() ? "-10" : (isCollapsed() ? "+" : "-")}
+                {showNumbers() ? "-3" : (isCollapsed() ? "+" : "-")}
               </Button>
               
               <div 
@@ -297,7 +349,7 @@ function App() {
           </div>
           
           <div 
-            class={`absolute bottom-2 left-3 text-sm font-mono px-2 py-1 rounded coordinates ${
+            class={`absolute bottom-0 -left-50 text-sm font-mono px-5 py-1 rounded coordinates ${
               !isDarkMode() ? 'text-black bg-white/50' : 'text-white bg-black/50'
             }`}
             style={{ "z-index": "10" }}
@@ -346,6 +398,28 @@ function App() {
         title={t('theory')}
         content={
           <div class="max-h-96 overflow-y-auto pr-2">
+            <div class="flex justify-between items-center mb-3">
+              <button
+                onClick={() => speak(t('theoryContent'))}
+                disabled={!isTTSEnabled() || isReading()}
+                class={`px-3 py-1 text-xs font-medium rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  isTTSEnabled() && !isReading()
+                    ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-600 dark:text-gray-400'
+                }`}
+              >
+                {isReading() ? `🔊 ${t('reading')}` : `🔊 ${t('readAloud')}`}
+              </button>
+              
+              {isReading() && (
+                <button
+                  onClick={stopSpeaking}
+                  class="px-3 py-1 text-xs font-medium bg-red-600 hover:bg-red-700 text-white rounded focus:outline-none focus:ring-2 focus:ring-red-500"
+                >
+                  ⏹️ {t('stop')}
+                </button>
+              )}
+            </div>
             <pre class="whitespace-pre-wrap text-sm leading-relaxed text-gray-600 dark:text-gray-300">
               {t('theoryContent')}
             </pre>
@@ -384,7 +458,35 @@ function App() {
       
       <Modal 
         title={t('optimisations')}
-        content={t('optimisationsContent')}
+        content={
+          <div>
+            <div class="flex justify-between items-center mb-3">
+              <button
+                onClick={() => speak(t('optimisationsContent'))}
+                disabled={!isTTSEnabled() || isReading()}
+                class={`px-3 py-1 text-xs font-medium rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  isTTSEnabled() && !isReading()
+                    ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-600 dark:text-gray-400'
+                }`}
+              >
+                {isReading() ? `🔊 ${t('reading')}` : `🔊 ${t('readAloud')}`}
+              </button>
+              
+              {isReading() && (
+                <button
+                  onClick={stopSpeaking}
+                  class="px-3 py-1 text-xs font-medium bg-red-600 hover:bg-red-700 text-white rounded focus:outline-none focus:ring-2 focus:ring-red-500"
+                >
+                  ⏹️ {t('stop')}
+                </button>
+              )}
+            </div>
+            <div class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+              {t('optimisationsContent')}
+            </div>
+          </div>
+        }
         isOpen={() => modals().optimizations}
         onClose={() => toggleModal('optimizations', false)}
       />
@@ -393,6 +495,7 @@ function App() {
         title={t('accessibility')}
         content={
           <div>
+            {/* Language Settings */}
             <div class="mb-6">
               <h4 class="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">
                 {t('languageSettings')} 
@@ -412,11 +515,91 @@ function App() {
                 ))}
               </select>
             </div>
+
+            {/* Text-to-Speech Settings */}
+            <div class="mb-6 border-t border-gray-200 dark:border-gray-700 pt-4">
+              <h4 class="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">
+                🔊 {t('textToSpeech')}
+              </h4>
+              
+              {/* TTS Enable/Disable */}
+              <div class="flex items-center justify-between mb-3">
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  {t('enableTTS')}
+                </label>
+                <button
+                  onClick={() => setIsTTSEnabled(!isTTSEnabled())}
+                  class={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                    isTTSEnabled() ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'
+                  }`}
+                >
+                  <span class={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                    isTTSEnabled() ? 'translate-x-5' : 'translate-x-0'
+                  }`} />
+                </button>
+              </div>
+
+              {/* Speech Rate Control */}
+              <div class="mb-3">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('speechRate')}: {speechRate().toFixed(1)}x
+                </label>
+                <input
+                  type="range"
+                  min="0.5"
+                  max="2.0"
+                  step="0.1"
+                  value={speechRate()}
+                  onInput={(e) => setSpeechRate(parseFloat(e.target.value))}
+                  class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 slider"
+                  disabled={!isTTSEnabled()}
+                />
+                <div class="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  <span>{t('slow')}</span>
+                  <span>{t('normal')}</span>
+                  <span>{t('fast')}</span>
+                </div>
+              </div>
+
+              {/* Test TTS Button */}
+              <div class="flex gap-2">
+                <button
+                  onClick={() => speak(t('ttsTestMessage'))}
+                  disabled={!isTTSEnabled() || isReading()}
+                  class={`px-4 py-2 text-sm font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    isTTSEnabled() && !isReading()
+                      ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-600 dark:text-gray-400'
+                  }`}
+                >
+                  {isReading() ? `🔊 ${t('speaking')}` : `🔊 ${t('testSpeech')}`}
+                </button>
+                
+                {isReading() && (
+                  <button
+                    onClick={stopSpeaking}
+                    class="px-4 py-2 text-sm font-medium bg-red-600 hover:bg-red-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                  >
+                    ⏹️ {t('stop')}
+                  </button>
+                )}
+              </div>
+            </div>
             
+            {/* Existing Accessibility Content */}
             <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
               <p class="text-sm text-gray-600 dark:text-gray-300">
                 {t('accessibilityContent')}
               </p>
+              
+              {/* TTS Announcement */}
+              {isTTSEnabled() && (
+                <div class="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                  <p class="text-sm text-blue-700 dark:text-blue-300">
+                    🔊 {t('ttsEnabled')}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         }
