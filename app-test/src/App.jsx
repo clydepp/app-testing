@@ -10,6 +10,9 @@ import RegionCascade from './components/RegionCascade';
 import { useTranslation } from './i18n/useTranslation.js';
 
 function App() {
+  // ✅ Declare the timeout variable inside the component
+  let colorSchemeTimeout;
+
   // Pixel to complex coordinate conversion
   const pixel_to_complex = (x, y, zoom, real_center, imag_center) => {
     const SCREEN_WIDTH = 960;
@@ -167,7 +170,20 @@ function App() {
   const handlePlusOne = () => setCounterCapped(counter() + 1);
   const handleMinusOne = () => setCounterCapped(counter() - 1);
   const handlePlusTen = () => setCounterCapped(counter() + 3);
-  const changeColourScheme = (scheme) => setColourScheme(scheme);
+  const changeColourScheme = (scheme) => {
+    console.log('🎨 Color scheme hovered:', scheme);
+    
+    // Clear any existing timeout
+    if (colorSchemeTimeout) {
+      clearTimeout(colorSchemeTimeout);
+    }
+    
+    // Set new timeout to change color scheme after 100ms
+    colorSchemeTimeout = setTimeout(() => {
+      console.log('🎨 Color scheme changed to:', scheme);
+      setColourScheme(scheme);
+    }, 300);
+  };
 
   // Input handlers - consolidated
   const createInputHandler = (setter, signalSetter) => (e) => {
