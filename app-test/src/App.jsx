@@ -107,9 +107,49 @@ function App() {
     onCleanup(() => window.removeEventListener('wheel', handleWheel));
   });
 
+  // ✅ ADD THIS: Right-click handler to set center
+  onMount(() => {
+    const handleRightClick = (event) => {
+      event.preventDefault(); // Prevent context menu
+      
+      // Get mouse coordinates relative to the viewport
+      const rect = event.currentTarget.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+      
+      // Convert pixel coordinates to complex coordinates
+      const [newReal, newImag] = pixel_to_complex(
+        x, 
+        y, 
+        mouseWheelDelta(), 
+        centerX(), 
+        centerY()
+      );
+      
+      // Update center coordinates
+      batch(() => {
+        setCenterX(newReal);
+        setCenterY(newImag);
+      });
+      
+      console.log(`🎯 Right-click: Set center to (${newReal.toFixed(6)}, ${newImag.toFixed(6)}i)`);
+    };
+
+    // Add event listener to the main container
+    const mainContainer = document.querySelector('.w-full.h-screen');
+    if (mainContainer) {
+      mainContainer.addEventListener('contextmenu', handleRightClick);
+      
+      // Clean up on unmount
+      onCleanup(() => {
+        mainContainer.removeEventListener('contextmenu', handleRightClick);
+      });
+    }
+  });
+
   // Create a capped setter function:
   const setCounterCapped = (value) => {
-    setCounter(Math.max(1, Math.min(value, 9)));
+    setCounter(Math.max(1, Math.min(value, 11)));
   };
 
   // Event handlers - simplified
@@ -167,7 +207,7 @@ function App() {
   // WebSocket setup
   onMount(() => {
     // Connection 1: Send parameters to FPGA
-    const fpgaWs = new WebSocket('ws://192.168.137.225:8080');
+    const fpgaWs = new WebSocket('ws://192.168.137.92:8080');
     
     fpgaWs.onopen = () => {
         console.log('🔧 Connected to FPGA parameter server!');

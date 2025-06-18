@@ -31,3 +31,22 @@
     transform: rotate(360deg);
   }
 }
+
+/* Add to your CSS for better Arabic/Chinese text display */
+.font-arabic {
+  font-family: 'Amiri', 'Traditional Arabic', 'Arabic Typesetting', serif;
+  direction: rtl;
+  text-align: right;
+}
+
+.font-chinese {
+  font-family: 'Noto Sans SC', 'Microsoft YaHei', 'PingFang SC', sans-serif;
+  line-height: 1.6;
+}
+
+/* Enhance text readability */
+.enhanced-text-display {
+  line-height: 1.8;
+  letter-spacing: 0.5px;
+  word-spacing: 2px;
+}
