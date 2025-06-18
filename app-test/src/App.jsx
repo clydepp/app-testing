@@ -1,5 +1,6 @@
 import { createSignal, createEffect, onMount, onCleanup, batch, createMemo } from 'solid-js';
 import { createMousePosition } from '@solid-primitives/mouse';
+import { Tooltip } from "@kobalte/core/tooltip";
 
 import Button from './components/Button';
 import CascadeButton from './components/CascadeButton';
@@ -36,7 +37,7 @@ function App() {
   const { t, setLanguage, currentLanguage } = useTranslation();
   
   const pos = createMousePosition(window);
-  const [mouseWheelDelta, setMouseWheelDelta] = createSignal(1);
+  const [mouseWheelDelta, setMouseWheelDelta] = createSignal(0);
   const [isDarkMode, setIsDarkMode] = createSignal(false);
   const [colourScheme, setColourScheme] = createSignal("classic");
   const [centerX, setCenterX] = createSignal(-0.5);
@@ -45,7 +46,7 @@ function App() {
   // UI state
   const [isCollapsed, setIsCollapsed] = createSignal(false);
   const [showNumbers, setShowNumbers] = createSignal(false);
-  const [counter, setCounter] = createSignal(1);
+  const [counter, setCounter] = createSignal(8);
   
   // Modal states - combined into object for cleaner management
   const [modals, setModals] = createSignal({
@@ -108,7 +109,7 @@ function App() {
 
   // Create a capped setter function:
   const setCounterCapped = (value) => {
-    setCounter(Math.max(0, Math.min(value, 10)));
+    setCounter(Math.max(1, Math.min(value, 9)));
   };
 
   // Event handlers - simplified
@@ -166,7 +167,7 @@ function App() {
   // WebSocket setup
   onMount(() => {
     // Connection 1: Send parameters to FPGA
-    const fpgaWs = new WebSocket('ws://192.168.137.248:8080');
+    const fpgaWs = new WebSocket('ws://192.168.137.225:8080');
     
     fpgaWs.onopen = () => {
         console.log('🔧 Connected to FPGA parameter server!');
@@ -208,13 +209,15 @@ function App() {
   createEffect(() => {
     const ws = websocket(); // This now connects to FPGA
     if (ws?.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify({
+      const params = {
         re_c: centerX(),
         im_c: centerY(),
         zoom: mouseWheelDelta(),
         max_iter: counter(),
         // colour_sch: colourScheme() (will be handled in .py program)
-      }));
+      };
+      ws.send(JSON.stringify(params));
+      console.log('📤 Sending to FPGA:', params); // ✅ Now params is defined!
     }
   });
 
@@ -289,7 +292,7 @@ function App() {
         }
       `}</style>
 
-      <div class={`w-[960px] h-[720px] border overflow-hidden shadow-lg relative ${isDarkMode() ? 'bg-gray-900' : 'bg-white'}`}>
+      <div class="w-full h-screen border-0 overflow-hidden relative bg-gray-900 dark:bg-gray-900">
         <div style={{
           "background-image": `url('${mandelbrotImage() || "data:image/jpeg;base64,iVBORw0K..."}')`,
           "background-size": "cover",

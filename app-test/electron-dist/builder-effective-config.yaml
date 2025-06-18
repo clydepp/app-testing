@@ -1,0 +1,20 @@
+directories:
+  output: electron-dist
+  buildResources: build
+appId: com.hardwarehustlers.mandelbrot
+productName: Mandelbrot Viewer
+files:
+  - filter:
+      - dist/**/*
+      - electron/main.js
+      - node_modules/**/*
+win:
+  target: nsis
+  icon: assets/icon.ico
+mac:
+  target: dmg
+  icon: assets/icon.icns
+linux:
+  target: AppImage
+  icon: assets/icon.png
+electronVersion: 36.4.0

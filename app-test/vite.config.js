@@ -7,10 +7,13 @@ export default defineConfig({
     tailwindcss(),
     solidPlugin()
   ],
+  base: './', // Important for Electron
   server: {
     port: 3000,
   },
   build: {
     target: 'esnext',
+    outDir: 'dist',
+    assetsDir: 'assets'
   },
 });
