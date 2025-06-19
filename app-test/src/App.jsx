@@ -45,6 +45,7 @@ function App() {
   const [colourScheme, setColourScheme] = createSignal("classic");
   const [centerX, setCenterX] = createSignal(-0.5);
   const [centerY, setCenterY] = createSignal(0.0);
+  const [isJulia, setIsJulia] = createSignal(0);
   
   // UI state
   const [isCollapsed, setIsCollapsed] = createSignal(false);
@@ -239,6 +240,34 @@ function App() {
     });
   };
 
+
+  onMount(() => {
+    const handleKeyPress = (event) => {
+      // Check if we're not typing in an input field
+      const activeElement = document.activeElement;
+      const isTyping = activeElement && (
+        activeElement.tagName === 'INPUT' || 
+        activeElement.tagName === 'TEXTAREA' || 
+        activeElement.contentEditable === 'true'
+      );
+      
+      // Only handle key if not typing in an input
+      if (!isTyping && event.key.toLowerCase() === 'j') {
+        const newValue = isJulia() === 0 ? 1 : 0;
+        setIsJulia(newValue);
+        console.log(`🔄 Julia mode toggled: ${newValue === 1 ? 'ON' : 'OFF'}`);
+      }
+    };
+
+    // Add keyboard event listener
+    window.addEventListener('keydown', handleKeyPress);
+    
+    // Clean up on unmount
+    onCleanup(() => {
+      window.removeEventListener('keydown', handleKeyPress);
+    });
+  });
+
   // WebSocket setup
   onMount(() => {
     // Connection 1: Send parameters to FPGA
@@ -284,15 +313,34 @@ function App() {
   createEffect(() => {
     const ws = websocket(); // This now connects to FPGA
     if (ws?.readyState === WebSocket.OPEN) {
-      const params = {
-        re_c: centerX(),
-        im_c: centerY(),
-        zoom: mouseWheelDelta(),
-        max_iter: counter(),
-        // colour_sch: colourScheme() (will be handled in .py program)
-      };
+      let params;
+      
+      if (isJulia() === 1) {
+        // Julia set mode - separate viewing center from Julia constant
+        params = {
+          re_c: 0.0,           // Fixed viewing center for Julia exploration
+          im_c: 0.0,           // Fixed viewing center for Julia exploration  
+          zoom: mouseWheelDelta(),
+          max_iter: counter(),
+          is_julia: 1,
+          julia_re: centerX(), // Julia constant (changes the fractal shape)
+          julia_im: centerY()  // Julia constant (changes the fractal shape)
+          // colour_sch: colourScheme() (will be handsled in .py program)
+        };
+      } else {
+        // Mandelbrot set mode - standard parameters
+        params = {
+          re_c: centerX(),     // Center of viewing area
+          im_c: centerY(),     // Center of viewing area
+          zoom: mouseWheelDelta(),
+          max_iter: counter(),
+          is_julia: 0
+          // colour_sch: colourScheme() (will be handled in .py program)
+        };
+      }
+      
       ws.send(JSON.stringify(params));
-      console.log('📤 Sending to FPGA:', params); // ✅ Now params is defined!
+      console.log(`📤 Sending to FPGA (${isJulia() === 1 ? 'Julia' : 'Mandelbrot'}):`, params);
     }
   });
 
