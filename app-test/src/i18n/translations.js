@@ -25,7 +25,18 @@ export const translations = {
     theoryContent: "The Mandelbrot set is the set of complex numbers c for which the sequence defined by z₀ = 0, zₙ₊₁ = zₙ² + c remains bounded as n increases.",
     optimisationsContent: "Zoom and maximum iterations were powers of two, allowing efficient shift operations instead of costly multiplications or divisions. The FPGA produces a greyscale frame where each pixel's shade depends on how deep its associated complex number evolves.",
     accessibilityContent: "Includes multiple language support, colorblind-friendly palettes, and keyboard navigation.",
-    languageSettings: "Language Settings"
+    languageSettings: "Language Settings",
+    // Region translations
+    seahorse: "Seahorse Valley",
+    seahorse_description: "This region resembles a seahorse and is one of the most recognizable features in the Mandelbrot set. It demonstrates the infinite complexity and self-similar nature of fractals.",
+    spiral_arms: "Spiral Arms",
+    spiral_arms_description: "These elegant spiral structures showcase the beautiful mathematical patterns that emerge from the simple iteration formula z² + c.",
+    minibrot: "Mini Mandelbrot",
+    minibrot_description: "A smaller copy of the main Mandelbrot set found deep within the fractal. This demonstrates the self-similar nature of fractals where patterns repeat at different scales.",
+    scepter: "The Scepter",
+    scepter_description: "An elongated region extending from the main body, resembling a royal scepter. This area shows intricate filament structures typical of the Mandelbrot set's boundary.",
+    tripleSpiral: "Triple Spiral",
+    triple_spiral_description: "A beautiful region featuring three interconnected spiral patterns, showcasing the complex dynamics near the boundary of the Mandelbrot set."
   },
   es: {
     title: "Visor de Mandelbrot",
@@ -53,7 +64,18 @@ export const translations = {
     theoryContent: "El conjunto de Mandelbrot es el conjunto de números complejos c para los cuales la secuencia definida por z₀ = 0, zₙ₊₁ = zₙ² + c permanece acotada a medida que n aumenta.",
     optimisationsContent: "El zoom y las iteraciones máximas fueron potencias de dos, permitiendo operaciones de desplazamiento eficientes en lugar de costosas multiplicaciones o divisiones.",
     accessibilityContent: "Incluye soporte para múltiples idiomas, paletas amigables para daltónicos y navegación por teclado.",
-    languageSettings: "Configuración de Idioma"
+    languageSettings: "Configuración de Idioma",
+    // Region translations
+    seahorse: "Valle del Caballito de Mar",
+    seahorse_description: "Esta región se asemeja a un caballito de mar y es una de las características más reconocibles del conjunto de Mandelbrot.",
+    spiral_arms: "Brazos Espirales",
+    spiral_arms_description: "Estas elegantes estructuras espirales muestran los hermosos patrones matemáticos que emergen de la simple fórmula de iteración z² + c.",
+    minibrot: "Mini Mandelbrot",
+    minibrot_description: "Una copia más pequeña del conjunto principal de Mandelbrot encontrada en lo profundo del fractal. Esto demuestra la naturaleza auto-similar de los fractales.",
+    scepter: "El Cetro",
+    scepter_description: "Una región alargada que se extiende desde el cuerpo principal, pareciéndose a un cetro real. Esta área muestra estructuras de filamentos intrincadas.",
+    tripleSpiral: "Triple Espiral",
+    triple_spiral_description: "Una hermosa región con tres patrones espirales interconectados, mostrando las dinámicas complejas cerca del límite del conjunto de Mandelbrot."
   },
   zh: {
     title: "曼德博集合查看器",
@@ -81,7 +103,18 @@ export const translations = {
     theoryContent: "曼德博集合是复数c的集合，其序列定义为z₀ = 0, zₙ₊₁ = zₙ² + c，当n增加时保持有界。",
     optimisationsContent: "缩放和最大迭代次数采用2的幂，允许高效的移位操作，而不是昂贵的乘法或除法运算。",
     accessibilityContent: "包括多语言支持、色盲友好调色板和键盘导航。",
-    languageSettings: "语言设置"
+    languageSettings: "语言设置",
+    // Region translations
+    seahorse: "海马谷",
+    seahorse_description: "这个区域类似于海马，是曼德博集合中最容易识别的特征之一。",
+    spiral_arms: "螺旋臂",
+    spiral_arms_description: "这些优雅的螺旋结构展示了从简单的迭代公式z² + c中出现的美丽数学模式。",
+    minibrot: "迷你曼德博",
+    minibrot_description: "在分形深处发现的主曼德博集合的较小副本。这展示了分形的自相似性质。",
+    scepter: "权杖",
+    scepter_description: "从主体延伸的细长区域，类似于皇家权杖。这个区域显示了曼德博集合边界的复杂细丝结构。",
+    tripleSpiral: "三重螺旋",
+    triple_spiral_description: "一个美丽的区域，具有三个相互连接的螺旋图案，展示了曼德博集合边界附近的复杂动力学。"
   },
   ar: {
     title: "عارض مجموعة مانديلبروت",
@@ -109,6 +142,17 @@ export const translations = {
     theoryContent: "مجموعة مانديلبروت هي مجموعة الأرقام المعقدة c التي يتم تعريف تسلسلها بواسطة z₀ = 0, zₙ₊₁ = zₙ² + c تبقى محدودة مع زيادة n.",
     optimisationsContent: "كانت التكبير والتكرارات القصوى قوى للعدد اثنين، مما يسمح بعمليات التحويل الفعالة بدلاً من الضرب أو القسمة المكلفة.",
     accessibilityContent: "يتضمن دعم اللغات المتعددة، ولوحات الألوان الصديقة لعمى الألوان، والتنقل بلوحة المفاتيح.",
-    languageSettings: "إعدادات اللغة"
+    languageSettings: "إعدادات اللغة",
+    // Region translations
+    seahorse: "وادي فرس البحر",
+    seahorse_description: "تشبه هذه المنطقة فرس البحر وهي واحدة من أكثر الميزات التي يمكن التعرف عليها في مجموعة مانديلبروت.",
+    spiral_arms: "أذرع حلزونية",
+    spiral_arms_description: "تُظهر هذه الهياكل الحلزونية الأنيقة الأنماط الرياضية الجميلة التي تنبثق من صيغة التكرار البسيطة z² + c.",
+    minibrot: "مانديلبروت مصغر",
+    minibrot_description: "نسخة أصغر من مجموعة مانديلبروت الرئيسية موجودة في أعماق الكسيري. هذا يدل على الطبيعة ذاتية التشابه للكسيريات.",
+    scepter: "الصولجان",
+    scepter_description: "منطقة ممدودة تمتد من الجسم الرئيسي، تشبه الصولجان الملكي. تُظهر هذه المنطقة هياكل خيطية معقدة.",
+    tripleSpiral: "حلزوني ثلاثي",
+    triple_spiral_description: "منطقة جميلة تضم ثلاثة أنماط حلزونية مترابطة، تُظهر الديناميكيات المعقدة بالقرب من حدود مجموعة مانديلبروت."
   }
 };
