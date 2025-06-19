@@ -182,7 +182,26 @@ function App() {
     colorSchemeTimeout = setTimeout(() => {
       console.log('🎨 Color scheme changed to:', scheme);
       setColourScheme(scheme);
-    }, 300);
+      sendColorSetting(scheme); // ✅ Send to Python server
+    }, 50);
+  };
+
+  // ✅ Add function to send colormap settings to Python
+  const sendColorSetting = (scheme) => {
+    const laptopWs = laptopWebsocket();
+    if (laptopWs?.readyState === WebSocket.OPEN) {
+      const settings = {
+        colormap: scheme
+      };
+      try {
+        laptopWs.send(JSON.stringify(settings));
+        console.log('📤 Sent colormap to Python:', scheme);
+      } catch (error) {
+        console.error('❌ Error sending colormap:', error);
+      }
+    } else {
+      console.warn('⚠️ Laptop WebSocket not connected, cannot send colormap');
+    }
   };
 
   // Input handlers - consolidated

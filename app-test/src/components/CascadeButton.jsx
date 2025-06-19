@@ -47,7 +47,7 @@ export default function CascadeButton (props){
         style={{
           "opacity": (isHovered() && !props.showNumbers) ? "1" : "0",
           "transform": (isHovered() && !props.showNumbers) ? "scaleX(1)" : "scaleX(0)",
-          "max-width": (isHovered() && !props.showNumbers) ? "200px" : "0px",
+          "max-width": (isHovered() && !props.showNumbers) ? "250px" : "0px",
           "margin-left": (isHovered() && !props.showNumbers) ? "4px" : "0px"
         }}
       >
@@ -67,6 +67,12 @@ export default function CascadeButton (props){
           customClass="bg-radial-[at_10%_85%] from-purple-800 via-orange-500 to-orange-300 to-90% hover:brightness-75 transition-all duration-200"
           isDarkMode={props.isDarkMode}
           onMouseEnter={() => handleColourHover('sunset')}
+        >
+        </Button>
+        <Button
+          customClass="bg-radial-[at_50%_50%] from-black to-green-600 hover:brightness-75 transition-all duration-200"
+          isDarkMode={props.isDarkMode}
+          onMouseEnter={() => handleColourHover('neon_green')}
         >
         </Button>
       </div>
