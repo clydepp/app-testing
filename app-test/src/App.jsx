@@ -99,7 +99,7 @@ function App() {
   onMount(() => {
     const handleWheel = (event) => {
       const newValue = Math.floor(mouseWheelDelta()+ (-event.deltaY)*0.01 );
-      setMouseWheelDelta(Math.max(0, Math.min(newValue, 32)));
+      setMouseWheelDelta(Math.max(0, Math.min(newValue, 20)));
     };
 
     window.addEventListener('wheel', handleWheel);
@@ -345,7 +345,10 @@ function App() {
           // colour_sch: colourScheme() (will be handled in .py program)
         };
       }
-      
+      // for (let i = 0; i < 2; i++){
+      //   ws.send(JSON.stringify(params));
+      // }
+
       ws.send(JSON.stringify(params));
     }
   });
