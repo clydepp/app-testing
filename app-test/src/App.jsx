@@ -10,29 +10,23 @@ import RegionCascade from './components/RegionCascade';
 import { useTranslation } from './i18n/useTranslation.js';
 
 function App() {
-  // ✅ Declare the timeout variable inside the component
   let colorSchemeTimeout;
 
-  // Pixel to complex coordinate conversion
   const pixel_to_complex = (x, y, zoom, real_center, imag_center) => {
     const SCREEN_WIDTH = 960;
     const SCREEN_HEIGHT = 720;
 
-    // Calculate the size of the viewing area in the complex plane
     const real_width = 3 / (2 ** zoom);
     const imag_height = 2 / (2 ** zoom);
 
-    // Calculate how much each pixel represents in complex coordinates
     const step_real = real_width / SCREEN_WIDTH;
     const step_imag = imag_height / SCREEN_HEIGHT;
 
-    // Find the boundaries of the viewing area
     const real_min = real_center - real_width / 2;
     const imag_max = imag_center + imag_height / 2;
 
-    // Convert pixel coordinates to complex coordinates
     const real = real_min + step_real * x;
-    const imag = imag_max - step_imag * y;  // Note: y-axis is flipped
+    const imag = imag_max - step_imag * y; 
 
     return [real, imag];
   };
@@ -52,7 +46,6 @@ function App() {
   const [showNumbers, setShowNumbers] = createSignal(false);
   const [counter, setCounter] = createSignal(8);
   
-  // Modal states - combined into object for cleaner management
   const [modals, setModals] = createSignal({
     main: false,
     theory: false,
@@ -62,21 +55,19 @@ function App() {
     usageBlur: false
   });
   
-  // Input tracking
   const [centerXInput, setCenterXInput] = createSignal(centerX().toFixed(8));
   const [centerYInput, setCenterYInput] = createSignal(centerY().toFixed(8));
   
-  // WebSocket
+ // websockets
   const [mandelbrotImage, setMandelbrotImage] = createSignal('');
-  const [websocket, setWebsocket] = createSignal(null);          // For FPGA parameters
-  const [laptopWebsocket, setLaptopWebsocket] = createSignal(null); // For processed frames
+  const [websocket, setWebsocket] = createSignal(null);  
+  const [laptopWebsocket, setLaptopWebsocket] = createSignal(null); 
 
   // Add TTS state
   const [isTTSEnabled, setIsTTSEnabled] = createSignal(false);
   const [speechRate, setSpeechRate] = createSignal(1.0);
   const [isReading, setIsReading] = createSignal(false);
 
-  // Memoized complex coordinate calculation for performance
   const currentComplexCoordinates = createMemo(() => {
     return pixel_to_complex(
       pos.x || 0,
@@ -87,7 +78,6 @@ function App() {
     );
   });
 
-  // Helper to update modal state
   const toggleModal = (modal, state = null) => {
     setModals(prev => ({
       ...prev,
@@ -95,12 +85,11 @@ function App() {
     }));
   };
 
-  // Dark mode effect
+  // toggle dark mode
   createEffect(() => {
     document.documentElement.classList.toggle('dark', isDarkMode());
   });
 
-  // Mouse wheel handler - capped at 32 with ** operator
   onMount(() => {
     const handleWheel = (event) => {
       const newValue = Math.floor(mouseWheelDelta()+ (-event.deltaY)*0.01 );
@@ -111,17 +100,15 @@ function App() {
     onCleanup(() => window.removeEventListener('wheel', handleWheel));
   });
 
-  // ✅ ADD THIS: Right-click handler to set center
+  // changes center (a DOM value)
   onMount(() => {
     const handleRightClick = (event) => {
-      event.preventDefault(); // Prevent context menu
-      
-      // Get mouse coordinates relative to the viewport
+      event.preventDefault(); // quick fix
+
       const rect = event.currentTarget.getBoundingClientRect();
       const x = event.clientX - rect.left;
       const y = event.clientY - rect.top;
       
-      // Convert pixel coordinates to complex coordinates
       const [newReal, newImag] = pixel_to_complex(
         x, 
         y, 
@@ -130,33 +117,29 @@ function App() {
         centerY()
       );
       
-      // Update center coordinates
+      // update both TOGETHER
       batch(() => {
         setCenterX(newReal);
         setCenterY(newImag);
       });
       
-      console.log(`🎯 Right-click: Set center to (${newReal.toFixed(6)}, ${newImag.toFixed(6)}i)`);
     };
-
-    // Add event listener to the main container
     const mainContainer = document.querySelector('.w-full.h-screen');
     if (mainContainer) {
       mainContainer.addEventListener('contextmenu', handleRightClick);
       
-      // Clean up on unmount
+      // for good practise
       onCleanup(() => {
         mainContainer.removeEventListener('contextmenu', handleRightClick);
       });
     }
   });
 
-  // Create a capped setter function:
   const setCounterCapped = (value) => {
     setCounter(Math.max(1, Math.min(value, 11)));
   };
 
-  // Event handlers - simplified
+  
   const toggleCollapse = () => {
     if (showNumbers()) {
       setCounterCapped(counter() - 3);
@@ -174,20 +157,17 @@ function App() {
   const changeColourScheme = (scheme) => {
     console.log('🎨 Color scheme hovered:', scheme);
     
-    // Clear any existing timeout
+
     if (colorSchemeTimeout) {
       clearTimeout(colorSchemeTimeout);
     }
     
-    // Set new timeout to change color scheme after 100ms
     colorSchemeTimeout = setTimeout(() => {
-      console.log('🎨 Color scheme changed to:', scheme);
       setColourScheme(scheme);
-      sendColorSetting(scheme); // ✅ Send to Python server
+      sendColorSetting(scheme); 
     }, 50);
   };
 
-  // ✅ Add function to send colormap settings to Python
   const sendColorSetting = (scheme) => {
     const laptopWs = laptopWebsocket();
     if (laptopWs?.readyState === WebSocket.OPEN) {
@@ -196,16 +176,14 @@ function App() {
       };
       try {
         laptopWs.send(JSON.stringify(settings));
-        console.log('📤 Sent colormap to Python:', scheme);
       } catch (error) {
-        console.error('❌ Error sending colormap:', error);
+        console.error('cannot send colourmap:', error);
       }
     } else {
-      console.warn('⚠️ Laptop WebSocket not connected, cannot send colormap');
+      console.warn('no connection!!!');
     }
   };
 
-  // Input handlers - consolidated
   const createInputHandler = (setter, signalSetter) => (e) => {
     const inputValue = e.target.value;
     setter(inputValue);
@@ -219,7 +197,6 @@ function App() {
   const handleCenterXInput = createInputHandler(setCenterXInput, setCenterX);
   const handleCenterYInput = createInputHandler(setCenterYInput, setCenterY);
 
-  // Sync input fields when values change programmatically
   createEffect(() => {
     if (document.activeElement?.getAttribute('data-input') !== 'centerX') {
       setCenterXInput(centerX().toFixed(8));
@@ -243,7 +220,6 @@ function App() {
 
   onMount(() => {
     const handleKeyPress = (event) => {
-      // Check if we're not typing in an input field
       const activeElement = document.activeElement;
       const isTyping = activeElement && (
         activeElement.tagName === 'INPUT' || 
@@ -251,7 +227,6 @@ function App() {
         activeElement.contentEditable === 'true'
       );
       
-      // Only handle key if not typing in an input
       if (!isTyping && event.key.toLowerCase() === 'j') {
         const newValue = isJulia() === 0 ? 1 : 0;
         setIsJulia(newValue);
@@ -259,79 +234,105 @@ function App() {
       }
     };
 
-    // Add keyboard event listener
     window.addEventListener('keydown', handleKeyPress);
-    
-    // Clean up on unmount
     onCleanup(() => {
       window.removeEventListener('keydown', handleKeyPress);
     });
   });
 
-  // WebSocket setup
   onMount(() => {
-    // Connection 1: Send parameters to FPGA
+    // UI to FPGA
     const fpgaWs = new WebSocket('ws://192.168.137.92:8080');
     
     fpgaWs.onopen = () => {
         console.log('🔧 Connected to FPGA parameter server!');
-        setWebsocket(fpgaWs);  // This is used for sending parameters
+        setWebsocket(fpgaWs);
     };
     
     fpgaWs.onerror = (error) => console.error('FPGA WebSocket error:', error);
     fpgaWs.onclose = () => console.log('FPGA parameter connection closed');
 
-    // Connection 2: Receive processed frames from laptop
+    // Python to UI
     const laptopWs = new WebSocket('ws://localhost:8001');
     
     laptopWs.onopen = () => {
-        console.log('💻 Connected to laptop frame server!');
+        console.log('colouring server connection established');
         setLaptopWebsocket(laptopWs);
     };
 
     laptopWs.onmessage = (event) => {
-        // Handle processed frames from laptop
         if (event.data instanceof Blob) {
             const url = URL.createObjectURL(event.data);
             setMandelbrotImage(url);
-            
-            // Clean up old URLs to prevent memory leaks
             setTimeout(() => URL.revokeObjectURL(url), 5000);
         }
     };
     
-    laptopWs.onerror = (error) => console.error('Laptop WebSocket error:', error);
-    laptopWs.onclose = () => console.log('Laptop frame connection closed');
+    // webcam to UI
+    const connectToGesture = () => {
+        const gestureWs = new WebSocket('ws://localhost:8003');
+        
+        gestureWs.onopen = () => {
+            console.log('camera is connected - ping to check');
+            
+            gestureWs.send(JSON.stringify({ type: 'ping' }));
+        };
+
+        gestureWs.onmessage = (event) => {
+            try {
+                const data = JSON.parse(event.data);
+                
+                if (data.type === 'gesture_zoom') {
+                    setMouseWheelDelta(data.zoom);
+                } else if (data.type === 'connection_status') {
+                    console.log('status:', data.message);
+                } else if (data.type === 'pong') {
+                    console.log('acknowledgment successful');
+                }
+            } catch (e) {
+                console.error('error parsing/recieving data:', e);
+            }
+        };
+        
+        gestureWs.onerror = (error) => {
+            console.error('gesture websocket error:', error);
+        };
+        
+        gestureWs.onclose = (event) => {
+            console.log('gesture connection closed:', event.code, event.reason);
+        };
+        
+        return gestureWs;
+    };
+    
+    const gestureWs = connectToGesture();
 
     onCleanup(() => {
         fpgaWs?.close();
         laptopWs?.close();
+        gestureWs?.close();
     });
   });
-  
-  // Send parameters when they change
+
   createEffect(() => {
-    const ws = websocket(); // This now connects to FPGA
+    const ws = websocket(); 
     if (ws?.readyState === WebSocket.OPEN) {
       let params;
       
       if (isJulia() === 1) {
-        // Julia set mode - separate viewing center from Julia constant
         params = {
-          re_c: 0.0,           // Fixed viewing center for Julia exploration
-          im_c: 0.0,           // Fixed viewing center for Julia exploration  
+          re_c: 0.0,           
+          im_c: 0.0,           
           zoom: mouseWheelDelta(),
           max_iter: counter(),
           is_julia: 1,
-          julia_re: centerX(), // Julia constant (changes the fractal shape)
-          julia_im: centerY()  // Julia constant (changes the fractal shape)
-          // colour_sch: colourScheme() (will be handsled in .py program)
+          julia_re: centerX(), 
+          julia_im: centerY() 
         };
       } else {
-        // Mandelbrot set mode - standard parameters
         params = {
-          re_c: centerX(),     // Center of viewing area
-          im_c: centerY(),     // Center of viewing area
+          re_c: centerX(),
+          im_c: centerY(),
           zoom: mouseWheelDelta(),
           max_iter: counter(),
           is_julia: 0
@@ -340,7 +341,6 @@ function App() {
       }
       
       ws.send(JSON.stringify(params));
-      console.log(`📤 Sending to FPGA (${isJulia() === 1 ? 'Julia' : 'Mandelbrot'}):`, params);
     }
   });
 
